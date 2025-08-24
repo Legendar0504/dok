@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Оздоровительный центр "КДМ" - Регистрация</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/auth.css">
+
+    <script src="js/ui.js"></script>
+    <script src="js/navigation.js"></script>
+    <style>
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #5D8AA8;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        #mobile-menu {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #mobile-menu.active {
+                display: flex;
+            }
+        }
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .password-input-container {
+            position: relative;
+        }
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #5D8AA8;
+        }
+    </style>
+</head>
+<body class="bg-blue-50 font-sans text-gray-700">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 sm:py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-2 rounded-full mr-2 sm:mr-3">
+                        <img src="img/1.png" alt="иконка" class="w-8 h-8 sm:w-10 sm:h-10">
+                    </div>
+                    <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-blue-800">Оздоровительный центр "КДМ"</h1>
+                </div>
+                <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                    <i class="fas fa-bars text-blue-800 text-xl sm:text-2xl"></i>
+                </button>
+                <nav class="hidden md:flex space-x-2 lg:space-x-4">
+                    <a href="index.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Главная</a>
+                    <a href="news.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Новости</a>
+                    <a href="about.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">О нас</a>
+                    <a href="gallery.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Галерея</a>
+                    <a href="service.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Услуги</a>
+                    <a href="contacts.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Контакты</a>
+                    <a href="login.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Вход</a>
+                </nav>
+                <div class="hidden md:flex items-center space-x-2" id="guest-buttons"></div>
+                <div class="hidden md:flex space-x-2" id="auth-buttons">
+                    <!-- Кнопки будут динамически обновляться -->
+                </div>
+            </div>
+            <nav id="mobile-menu" class="md:hidden flex-col space-y-2 mt-3">
+                <a href="index.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Главная</a>
+                <a href="news.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">новости</a>
+                <a href="about.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">о нас</a>
+                <a href="gallery.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">галерея</a>
+                <a href="service.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">услуги</a>
+                <a href="contacts.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">контакты</a>
+                <a href="login.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">вход</a>
+                <hr class="border-gray-300">
+                <div id="mobile-auth-buttons">
+                    <!-- Кнопки будут динамически обновляться -->
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 sm:py-8">
+        <div class="max-w-lg mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6 sm:p-8">
+                <div class="text-center mb-8">
+                    <div class="bg-blue-100 p-3 rounded-full inline-block mb-4">
+                        <i class="fas fa-user-plus text-blue-600 text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Регистрация</h2>
+                    <p class="text-gray-600">Создайте аккаунт для доступа к личному кабинету</p>
+                </div>
+
+                <form id="registerForm" class="space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user text-blue-600 mr-2"></i>Фамилия
+                            </label>
+                            <input 
+                                type="text" 
+                                id="lastName" 
+                                name="lastName" 
+                                required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                placeholder="Введите фамилию"
+                            >
+                        </div>
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user text-blue-600 mr-2"></i>Имя
+                            </label>
+                            <input 
+                                type="text" 
+                                id="firstName" 
+                                name="firstName" 
+                                required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                placeholder="Введите имя"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="middleName" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user text-blue-600 mr-2"></i>Отчество
+                        </label>
+                        <input 
+                            type="text" 
+                            id="middleName" 
+                            name="middleName" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            placeholder="Введите отчество (необязательно)"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope text-blue-600 mr-2"></i>Email
+                        </label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            placeholder="Введите ваш email"
+                        >
+                    </div>
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-phone text-blue-600 mr-2"></i>Номер телефона
+                        </label>
+                        <input 
+                            type="tel" 
+                            id="phone" 
+                            name="phone" 
+                            required
+                            inputmode="tel"
+                            autocomplete="tel"
+                            maxlength="18"
+                            pattern="^\+7 \(\d{3}\) \d{3} \d{2}-\d{2}$"
+                            title="Формат: +7 (XXX) XXX XX-XX"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            placeholder="+7 (___) ___ __-__"
+                        >
+                    </div>
+
+                    <div>
+                        <label for="additionalInfo" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-info-circle text-blue-600 mr-2"></i>Дополнительная информация
+                        </label>
+                        <textarea 
+                            id="additionalInfo" 
+                            name="additionalInfo" 
+                            rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                            placeholder="Укажите дополнительную информацию о себе (возраст, хронические заболевания, аллергии и т.д.)"
+                        ></textarea>
+                    </div>
+                    
+
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="password-input-container">
+                            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock text-blue-600 mr-2"></i>Пароль
+                            </label>
+                            <input 
+                                type="password" 
+                                id="password" 
+                                name="password" 
+                                required
+                                minlength="6"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                placeholder="Введите пароль (минимум 6 символов)"
+                            >
+                            <span class="toggle-password" onclick="togglePasswordVisibility('password', this)">
+                                <i class="far fa-eye"></i>
+                            </span>
+                        </div>
+                        <div class="password-input-container">
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-lock text-blue-600 mr-2"></i>Подтвердите пароль
+                            </label>
+                            <input 
+                                type="password" 
+                                id="confirmPassword" 
+                                name="confirmPassword" 
+                                required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                                placeholder="Повторите пароль"
+                            >
+                            <span class="toggle-password" onclick="togglePasswordVisibility('confirmPassword', this)">
+                                <i class="far fa-eye"></i>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="terms" required class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <label for="terms" class="ml-2 text-sm text-gray-600">
+                            Я согласен с <a href="#" class="text-blue-600 hover:text-blue-800">условиями использования</a> и 
+                            <a href="#" class="text-blue-600 hover:text-blue-800">политикой конфиденциальности</a>
+                        </label>
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        id="submitBtn"
+                        class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-200 font-medium"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>Зарегистрироваться
+                    </button>
+                </form>
+
+                <div class="mt-6 text-center">
+                    <p class="text-gray-600">
+                        Уже есть аккаунт? 
+                        <a href="login.html" class="text-blue-600 hover:text-blue-800 font-medium transition duration-200">
+                            Войти
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Оздоровительный центр "КДМ"</h3>
+                    <p class="text-gray-300">Ваше здоровье - наш приоритет. Мы предлагаем широкий спектр оздоровительных услуг для поддержания вашего благополучия.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Контакты</h3>
+                    <p class="text-gray-300 mb-2"><i class="fas fa-phone mr-2"></i>+7 (XXX) XXX-XX-XX</p>
+                    <p class="text-gray-300 mb-2"><i class="fas fa-envelope mr-2"></i>info@kdmsenter.ru</p>
+                    <p class="text-gray-300"><i class="fas fa-map-marker-alt mr-2"></i>г. Москва, ул. Примерная, д. 1</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Режим работы</h3>
+                    <p class="text-gray-300 mb-2">Пн-Пт: 8:00 - 20:00</p>
+                    <p class="text-gray-300 mb-2">Сб-Вс: 9:00 - 18:00</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2024 Оздоровительный центр "КДМ". Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Маска телефона: +7 (123) 456 78-90
+        document.addEventListener('DOMContentLoaded', function () {
+            const phoneInput = document.getElementById('phone');
+            if (!phoneInput) return;
+
+            function formatPhone(value) {
+                // Оставляем только цифры
+                const digitsRaw = value.replace(/\D/g, '');
+                if (digitsRaw.length === 0) return '';
+
+                // Нормализуем: 8 -> 7
+                const digits = digitsRaw.replace(/^8/, '7');
+
+                // Строим шаблон
+                let res = '+7 (';
+                // Пропускаем ведущую 7, если пользователь её ввел
+                const pure = digits[0] === '7' ? digits.slice(1) : digits;
+
+                // Код (XXX)
+                if (pure.length > 0) res += pure.substring(0, Math.min(3, pure.length));
+                if (pure.length >= 3) res += ') ';
+                else return res;
+
+                // 456
+                if (pure.length > 3) res += pure.substring(3, Math.min(6, pure.length));
+                if (pure.length >= 6) res += ' ';
+                else return res;
+
+                // 78
+                if (pure.length > 6) res += pure.substring(6, Math.min(8, pure.length));
+                if (pure.length >= 8) res += '-';
+                else return res;
+
+                // 90
+                if (pure.length > 8) res += pure.substring(8, Math.min(10, pure.length));
+
+                return res;
+            }
+
+            function getCaretFromDigitsCount(formattedValue, digitsCount) {
+                if (digitsCount <= 0) return 0;
+                let count = 0;
+                for (let i = 0; i < formattedValue.length; i++) {
+                    if (/\d/.test(formattedValue[i])) {
+                        count++;
+                        if (count === digitsCount) {
+                            return i + 1;
+                        }
+                    }
+                }
+                return formattedValue.length;
+            }
+
+            phoneInput.addEventListener('input', function () {
+                const oldValue = this.value;
+                const oldCaret = this.selectionStart || 0;
+                const digitsBeforeCaret = oldValue.slice(0, oldCaret).replace(/\D/g, '').length;
+
+                const formatted = formatPhone(oldValue);
+                this.value = formatted;
+
+                const newCaret = getCaretFromDigitsCount(this.value, digitsBeforeCaret);
+                this.setSelectionRange(newCaret, newCaret);
+            });
+
+            // Больше не добавляем префикс насильно при фокусе — даём стереть до пустого значения
+
+            phoneInput.addEventListener('blur', function() {
+                // Если введено слишком мало цифр — очищаем, но не оставляем одинокие символы-маски
+                if (this.value.replace(/\D/g, '').length < 11) {
+                    this.value = '';
+                }
+            });
+        });
+    </script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('active');
+        });
+
+        // Password validation
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                alert("Пароли не совпадают!");
+                return false;
+            }
+            
+            if (password.length < 6) {
+                e.preventDefault();
+                alert("Пароль должен содержать минимум 6 символов!");
+                return false;
+            }
+            
+            // Если все проверки пройдены, форма отправится
+            return true;
+        });
+
+        // Toggle password visibility
+        function togglePasswordVisibility(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === "password") {
+                input.type = "text";
+                icon.innerHTML = '<i class="far fa-eye-slash"></i>';
+            } else {
+                input.type = "password";
+                icon.innerHTML = '<i class="far fa-eye"></i>';
+            }
+        }
+    </script>
+</body>
+</html>

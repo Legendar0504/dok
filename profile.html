@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Оздоровительный центр "КДМ" - Личный кабинет</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <script type="module" src="js/firebase-init.js"></script>
+    <script src="js/ui.js"></script>
+    <style>
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background-color: #5D8AA8;
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        .nav-link.active::after {
+            width: 100%;
+        }
+        #mobile-menu {
+            display: none;
+        }
+        @media (max-width: 768px) {
+            #mobile-menu.active {
+                display: flex;
+            }
+        }
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        .profile-nav-item {
+            @apply px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition duration-200 cursor-pointer;
+        }
+        .profile-nav-item.active {
+            @apply bg-blue-100 text-blue-700 border-r-2 border-blue-600;
+        }
+        .status-pending { @apply bg-yellow-100 text-yellow-800; }
+        .status-approved { @apply bg-green-100 text-green-800; }
+        .status-rejected { @apply bg-red-100 text-red-800; }
+        .status-completed { @apply bg-blue-100 text-blue-800; }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+        .modal-content {
+            background-color: white;
+            margin: auto;
+            padding: 30px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+        .close {
+            color: #9ca3af;
+            float: right;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+        .close:hover {
+            color: #374151;
+        }
+        
+        /* Topic selection styles */
+        .topic-group {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .subtopic-item {
+            display: block;
+            padding: 12px 16px;
+            margin: 4px 0;
+            background-color: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        .subtopic-item:hover {
+            background-color: #f3f4f6;
+            border-color: #d1d5db;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .subtopic-item.selected {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Enhanced form styles */
+        .form-input {
+            transition: all 0.2s ease;
+        }
+        .form-input:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+        }
+
+        /* Form field enhancements */
+        input[type="date"], input[type="text"], select, textarea {
+            transition: all 0.2s ease;
+        }
+        input[type="date"]:focus, input[type="text"]:focus, select:focus, textarea:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06);
+            border-color: #3b82f6;
+        }
+        
+        /* Topic button animations */
+        .topic-btn {
+            transition: all 0.2s ease;
+        }
+        .topic-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        .topic-btn.active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.2), 0 2px 4px -1px rgba(59, 130, 246, 0.1);
+        }
+        
+    </style>
+</head>
+<body class="bg-blue-50 font-sans text-gray-700">
+    <!-- Header -->
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 sm:py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="bg-blue-100 p-2 rounded-full mr-2 sm:mr-3">
+                        <img src="img/1.png" alt="иконка" class="w-8 h-8 sm:w-10 sm:h-10">
+                    </div>
+                    <h1 class="text-lg sm:text-xl md:text-2xl font-bold text-blue-800">Оздоровительный центр "КДМ"</h1>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center space-x-2">
+                        <span class="text-sm text-gray-600">Добро пожаловать,</span>
+                        <span class="font-medium text-blue-800" id="userName">Пользователь</span>
+                        <span id="userRole" class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs ml-2"></span>
+                    </div>
+                    
+                    <button id="mobile-menu-button" class="md:hidden focus:outline-none">
+                        <i class="fas fa-bars text-blue-800 text-xl sm:text-2xl"></i>
+                    </button>
+                    <div class="relative">
+                        <button id="userMenuButton" class="flex items-center space-x-2 bg-blue-100 hover:bg-blue-200 px-3 py-2 rounded-lg transition duration-200">
+                            <i class="fas fa-user-circle text-blue-600"></i>
+                            <span class="hidden sm:block text-blue-800 font-medium">Профиль</span>
+                            <i class="fas fa-chevron-down text-blue-600 text-sm"></i>
+                        </button>
+                        <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 hidden z-50">
+                            <a href="profile.html" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">
+                                <i class="fas fa-user mr-2"></i>Личный кабинет
+                            </a>
+                            <a href="#edit" id="openEditFromMenu" class="block px-4 py-2 text-gray-700 hover:bg-blue-50">
+                                <i class="fas fa-cog mr-2"></i>Настройки
+                            </a>
+                            <hr class="my-2">
+                            <button id="logoutBtn" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Выйти
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <nav class="hidden md:flex space-x-2 lg:space-x-4">
+                    <a href="index.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Главная</a>
+                    <a href="news.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Новости</a>
+                    <a href="about.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">О нас</a>
+                    <a href="gallery.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Галерея</a>
+                    <a href="service.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Услуги</a>
+                    <a href="contacts.html" class="nav-link px-2 py-2 text-blue-800 font-medium text-sm lg:text-base">Контакты</a>
+                </nav>
+                <div class="hidden md:flex items-center space-x-2" id="guest-buttons"></div>
+            </div>
+            <nav id="mobile-menu" class="md:hidden flex-col space-y-2 mt-3">
+                <a href="index.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Главная</a>
+                <a href="news.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Новости</a>
+                <a href="about.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">О нас</a>
+                <a href="gallery.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Галерея</a>
+                <a href="service.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Услуги</a>
+                <a href="contacts.html" class="nav-link px-3 py-2 text-blue-800 font-medium text-sm">Контакты</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-6 sm:py-8">
+        <div class="max-w-6xl mx-auto">
+            <!-- Profile Header -->
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <div class="flex flex-col md:flex-row items-center md:items-start space-y-4 md:space-y-0 md:space-x-6">
+                    <div class="bg-blue-100 p-4 rounded-full">
+                        <img id="avatarImage" alt="Аватар" class="w-24 h-24 rounded-full object-cover hidden">
+                        <i id="avatarIcon" class="fas fa-user-circle text-blue-600 text-6xl"></i>
+                    </div>
+                    <div class="flex-1 text-center md:text-left">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2" id="fullUserName">Загрузка...</h2>
+                        <p class="text-gray-600 mb-2" id="userEmail">Загрузка...</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                <i class="fas fa-calendar mr-1"></i>Дата регистрации: <span id="registrationDate">Загрузка...</span>
+                            </span>
+                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                                <i class="fas fa-phone mr-1"></i>Телефон: <span id="userPhone">—</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" id="sendApplicationBtn">
+                            <i class="fas fa-paper-plane mr-2"></i>Отправить заявку
+                        </button>
+                        <button class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200" id="adminApplicationsBtn" style="display: none;">
+                            <i class="fas fa-tasks mr-2"></i>Заявки
+                        </button>
+                        <button class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200" id="adminUsersBtn" style="display: none;">
+                            <i class="fas fa-users mr-2"></i>Пользователи
+                        </button>
+                        <a href="add-news.html" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200" id="adminNewsBtn" style="display: none;">
+                            <i class="fas fa-plus mr-2"></i>Добавить новость
+                        </a>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" id="editProfileBtn">
+                            <i class="fas fa-edit mr-2"></i>Редактировать
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profile Navigation and Content -->
+            <div class="flex flex-col lg:flex-row gap-6">
+                <!-- Sidebar Navigation -->
+                <div class="lg:w-64">
+                    <div class="bg-white rounded-lg shadow-lg">
+                        <nav class="p-4">
+                            <div class="profile-nav-item active" data-tab="overview">
+                                <i class="fas fa-home mr-3"></i>Обзор
+                            </div>
+                            <div class="profile-nav-item" data-tab="applications">
+                                <i class="fas fa-file-alt mr-3"></i>Мои заявки
+                            </div>
+                            <div class="profile-nav-item" data-tab="upcoming">
+                                <i class="fas fa-calendar-alt mr-3"></i>Ближайшие записи
+                            </div>
+                            <div class="profile-nav-item" data-tab="admin-applications" id="adminApplicationsTab" style="display: none;">
+                                <i class="fas fa-tasks mr-3"></i>Все заявки
+                            </div>
+                            <div class="profile-nav-item" data-tab="admin-users" id="adminUsersTab" style="display: none;">
+                                <i class="fas fa-users mr-3"></i>Пользователи
+                            </div>
+                            <div class="profile-nav-item" data-tab="records">
+                                <i class="fas fa-calendar-check mr-3"></i>Мои записи
+                            </div>
+                            <div class="profile-nav-item" data-tab="settings">
+                                <i class="fas fa-cog mr-3"></i>Настройки
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="flex-1">
+                    <!-- Overview Tab -->
+                    <div id="overview" class="tab-content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-white rounded-lg shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                        <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Всего заявок</h3>
+                                        <p class="text-3xl font-bold text-blue-600" id="totalApplications">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 p-3 rounded-full mr-4">
+                                        <i class="fas fa-calendar-check text-green-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Активные записи</h3>
+                                        <p class="text-3xl font-bold text-green-600" id="activeAppointments">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow-lg p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-yellow-100 p-3 rounded-full mr-4">
+                                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">В обработке</h3>
+                                        <p class="text-3xl font-bold text-yellow-600" id="pendingApplications">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Recent Applications -->
+                            <div class="bg-white rounded-lg shadow-lg p-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Последние заявки</h3>
+                                <div id="recentApplications" class="space-y-3">
+                                    <!-- Applications will be loaded here -->
+                                </div>
+                                <div class="mt-4">
+                                    <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="switchToTab('applications')">
+                                        Посмотреть все заявки <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Upcoming Appointments -->
+                            <div class="bg-white rounded-lg shadow-lg p-6">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-4">Ближайшие записи</h3>
+                                <div id="upcomingAppointments" class="space-y-3">
+                                    <!-- Appointments will be loaded here -->
+                                </div>
+                                <div class="mt-4">
+                                    <a href="#" class="text-blue-600 hover:text-blue-800 text-sm font-medium" onclick="switchToTab('applications')">
+                                        Посмотреть все записи <i class="fas fa-arrow-right ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Applications Tab -->
+                    <div id="applications" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Мои заявки</h3>
+                                <div class="flex space-x-2">
+                                    <select id="userStatusFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                        <option value="">Все статусы</option>
+                                        <option value="pending">В обработке</option>
+                                        <option value="approved">Одобрено</option>
+                                        <option value="rejected">Отклонено</option>
+                                        <option value="completed">Завершено</option>
+                                    </select>
+                                    <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition duration-200" onclick="forceRefreshUserData()">
+                                        <i class="fas fa-sync-alt mr-2"></i>Обновить
+                                    </button>
+                                    <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-200" id="toggleUserApplicationsSection">
+                                        <i class="fas fa-chevron-up mr-2"></i>Свернуть
+                                    </button>
+                                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" onclick="openApplicationModal()">
+                                        <i class="fas fa-plus mr-2"></i>Новая заявка
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="userApplicationsContent">
+                            <!-- Статистика заявок -->
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <div class="p-2 bg-blue-100 rounded-lg">
+                                            <i class="fas fa-file-alt text-blue-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-blue-600">Всего заявок</p>
+                                            <p class="text-2xl font-bold text-blue-900" id="userTotalApplications">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <div class="p-2 bg-yellow-100 rounded-lg">
+                                            <i class="fas fa-clock text-yellow-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-yellow-600">В обработке</p>
+                                            <p class="text-2xl font-bold text-yellow-900" id="userPendingApplications">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <div class="p-2 bg-green-100 rounded-lg">
+                                            <i class="fas fa-check text-green-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-green-600">Одобрено</p>
+                                            <p class="text-2xl font-bold text-green-900" id="userApprovedApplications">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div class="flex items-center">
+                                        <div class="p-2 bg-red-100 rounded-lg">
+                                            <i class="fas fa-times text-red-600"></i>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-red-600">Отклонено</p>
+                                            <p class="text-2xl font-bold text-red-900" id="userRejectedApplications">0</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Тема</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Подтема</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Дата и время</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">
+                                                <button class="flex items-center space-x-1 hover:text-blue-600 transition-colors" onclick="applicationsManager.sortUserApplications('submittedAt')">
+                                                    <span>Дата подачи</span>
+                                                    <i class="fas fa-sort text-gray-400"></i>
+                                                </button>
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Статус</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="applicationsTableBody" class="divide-y divide-gray-200">
+                                        <!-- Applications will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Applications Tab -->
+                    <div id="admin-applications" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Все заявки пользователей</h3>
+                                <div class="flex space-x-2">
+                                    <select id="statusFilter" class="border border-gray-300 rounded-lg px-3 py-2">
+                                        <option value="">Все статусы</option>
+                                        <option value="pending">В обработке</option>
+                                        <option value="approved">Одобрено</option>
+                                        <option value="rejected">Отклонено</option>
+                                        <option value="completed">Завершено</option>
+                                    </select>
+                                    <button class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition duration-200" id="toggleAdminApplicationsSection">
+                                        <i class="fas fa-chevron-up mr-2"></i>Свернуть
+                                    </button>
+                                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" onclick="refreshAdminApplications()">
+                                        <i class="fas fa-sync-alt mr-2"></i>Обновить
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="adminApplicationsContent">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Пользователь</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Тема</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Подтема</th>
+                                                <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Дата записи</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Дата подачи</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Статус</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminApplicationsTableBody" class="divide-y divide-gray-200">
+                                        <!-- Admin applications will be loaded here -->
+                                    </tbody>
+                                </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Users Tab -->
+                    <div id="admin-users" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Зарегистрированные пользователи</h3>
+                                <div class="flex space-x-2">
+                                    <input id="usersSearch" type="text" placeholder="Поиск по имени или email" class="border border-gray-300 rounded-lg px-3 py-2 text-sm" />
+                                    <select id="usersRoleFilter" class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                        <option value="">Все роли</option>
+                                        <option value="admin">Админ</option>
+                                        <option value="user">Пользователь</option>
+                                    </select>
+                                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" onclick="renderAdminUsers()">
+                                        <i class="fas fa-sync-alt mr-2"></i>Обновить
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">ФИО</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Email</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Телефон</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Роль</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Дата регистрации</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminUsersTableBody" class="divide-y divide-gray-200">
+                                        <!-- Users will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- History Tab -->
+                    <div id="history" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">История</h3>
+                            <p class="text-gray-600">Здесь будет отображаться история ваших посещений и услуг.</p>
+                        </div>
+                    </div>
+
+                    <!-- Records Tab -->
+                    <div id="records" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Мои записи</h3>
+                            <p class="text-gray-600">Здесь будут отображаться ваши записи.</p>
+                        </div>
+                    </div>
+
+                    <!-- Upcoming Tab -->
+                    <div id="upcoming" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-xl font-semibold text-gray-800">Ближайшие записи</h3>
+                                <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200" onclick="renderUserUpcomingAppointments()">
+                                    <i class="fas fa-sync-alt mr-2"></i>Обновить
+                                </button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Услуга</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Дата</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Статус</th>
+                                            <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Действия</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="userUpcomingTableBody" class="divide-y divide-gray-200">
+                                        <!-- Rows will be loaded here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div id="settings" class="tab-content hidden">
+                        <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Настройки профиля</h3>
+                            <p class="text-gray-600">Здесь вы сможете изменить настройки вашего профиля.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content" style="max-width: 520px;">
+            <span class="close" onclick="closeEditProfileModal()">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Редактировать профиль</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Аватар</label>
+                    <div class="flex items-center space-x-4">
+                        <img id="editAvatarPreview" class="w-20 h-20 rounded-full object-cover hidden" alt="preview">
+                        <div class="flex-1">
+                            <input type="file" id="avatarInput" accept="image/*" class="block w-full text-sm text-gray-700 border border-gray-300 rounded-lg px-3 py-2" />
+                            <p class="text-xs text-gray-500 mt-2">PNG/JPG, до 2 МБ</p>
+                        </div>
+                    </div>
+                    <div class="mt-3 flex space-x-2">
+                        <button id="saveAvatarBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Сохранить</button>
+                        <button id="removeAvatarBtn" class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700">Удалить аватар</button>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Фамилия</label>
+                    <input type="text" id="editLastName" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Введите фамилию">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Имя</label>
+                    <input type="text" id="editFirstName" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Введите имя">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Отчество</label>
+                    <input type="text" id="editMiddleName" class="w-full border border-gray-300 rounded-lg px-3 py-2" placeholder="Введите отчество (необязательно)">
+                </div>
+                <div class="flex space-x-2 pt-2">
+                    <button id="saveFioBtn" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Сохранить данные</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Modal -->
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeApplicationModal()">&times;</span>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Отправить заявку</h2>
+            
+            <form id="applicationForm">
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Выберите тему:</label>
+                    <div class="grid grid-cols-5 gap-3">
+                        <button type="button" class="topic-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-3 px-3 rounded-lg transition duration-200 text-sm" data-topic="1">
+                            Остеопат
+                        </button>
+                        <button type="button" class="topic-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-3 px-3 rounded-lg transition duration-200 text-sm" data-topic="2">
+                            Кинезиолог
+                        </button>
+                        <button type="button" class="topic-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-3 px-3 rounded-lg transition duration-200 text-sm" data-topic="3">
+                            Face массаж
+                        </button>
+                        <button type="button" class="topic-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-3 px-3 rounded-lg transition duration-200 text-sm" data-topic="4">
+                            Реабилитация
+                        </button>
+                        <button type="button" class="topic-btn bg-blue-100 hover:bg-blue-200 text-blue-800 font-medium py-3 px-3 rounded-lg transition duration-200 text-sm" data-topic="5">
+                            Физиотерапия
+                        </button>
+                    </div>
+
+                </div>
+
+                <div id="subtopicsContainer" class="mb-4" style="display: none;">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Выберите подтему:</label>
+                    <div id="subtopicsList" class="grid grid-cols-2 gap-3">
+                        <!-- Subtopics will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Выберите дату и время:</label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-600 text-xs mb-1">Дата:</label>
+                            <input type="date" id="applicationDate" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-600 text-xs mb-1">Время (с 9:00 до 22:00):</label>
+                            <select id="applicationTime" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" required>
+                                <option value="">Выберите время</option>
+                                <option value="09:00">09:00</option>
+                                <option value="09:30">09:30</option>
+                                <option value="10:00">10:00</option>
+                                <option value="10:30">10:30</option>
+                                <option value="11:00">11:00</option>
+                                <option value="11:30">11:30</option>
+                                <option value="12:00">12:00</option>
+                                <option value="12:30">12:30</option>
+                                <option value="13:00">13:00</option>
+                                <option value="13:30">13:30</option>
+                                <option value="14:00">14:00</option>
+                                <option value="14:30">14:30</option>
+                                <option value="15:00">15:00</option>
+                                <option value="15:30">15:30</option>
+                                <option value="16:00">16:00</option>
+                                <option value="16:30">16:30</option>
+                                <option value="17:00">17:00</option>
+                                <option value="17:30">17:30</option>
+                                <option value="18:00">18:00</option>
+                                <option value="18:30">18:30</option>
+                                <option value="19:00">19:00</option>
+                                <option value="19:30">19:30</option>
+                                <option value="20:00">20:00</option>
+                                <option value="20:30">20:30</option>
+                                <option value="21:00">21:00</option>
+                                <option value="21:30">21:30</option>
+                                <option value="22:00">22:00</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Дополнительная информация:</label>
+                    <textarea id="applicationNotes" class="w-full border border-gray-300 rounded-lg px-3 py-2 h-24 focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Опишите вашу проблему или пожелания..."></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition duration-200" onclick="closeApplicationModal()">
+                        Отмена
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition duration-200">
+                        Отправить заявку
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Proposal & Chat Modal -->
+    <div id="proposalChatModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="(function(){ const m=document.getElementById('proposalChatModal'); if(m){ m.classList.remove('show'); setTimeout(()=> m.style.display='none', 200); } })()">&times;</span>
+            <div id="proposalChatContent"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white py-6 sm:py-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 items-start">
+                <div class="min-h-[120px] sm:min-h-[150px]">
+                    <h3 class="text-lg font-bold mb-3">О центре "КДМ"</h3>
+                    <p class="text-blue-200 text-sm">Мы помогаем нашим клиентам обрести здоровье и гармонию с помощью современных методик.</p>
+                </div>
+                <div class="min-h-[120px] sm:min-h-[150px]">
+                    <h3 class="text-lg font-bold mb-3">Услуги</h3>
+                    <ul class="space-y-2">
+                        <li><a href="ost.html" class="text-blue-200 hover:text-white transition block">Остеопатия</a></li>
+                        <li><a href="kin.html" class="text-blue-200 hover:text-white transition block">Кинезиология</a></li>
+                        <li><a href="mas.html" class="text-blue-200 hover:text-white transition block">Массаж</a></li>
+                    </ul>
+                </div>
+                <div class="min-h-[120px] sm:min-h-[150px]">
+                    <h3 class="text-lg font-bold mb-3">Контакты</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-2 text-blue-300"></i>
+                            <span class="text-blue-200 text-sm">Санкт-Петербург, ул. Комиссара Смирнова, 15В</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone-alt mr-2 text-blue-300"></i>
+                            <span class="text-blue-200 text-sm">+7 (965) 777-90-90</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2 text-blue-300"></i>
+                            <span class="text-blue-200 text-sm">info@kdmsenter.ru</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="min-h-[120px] sm:min-h-[150px]">
+                    <h3 class="text-lg font-bold mb-3">Мы в соцсетях</h3>
+                    <div class="flex space-x-4">
+                        <a href="https://m.vk.com/therunoflife" class="bg-blue-800 hover:bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-vk text-white"></i>
+                        </a>
+                        <a href="https://t.me/kinesiologrustam" class="bg-blue-800 hover:bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-telegram text-white"></i>
+                        </a>
+                        <a href="https://wa.me/+79657779090" class="bg-blue-800 hover:bg-blue-700 w-10 h-10 rounded-full flex items-center justify-center transition">
+                            <i class="fab fa-whatsapp text-white"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-blue-800 mt-6 pt-4 text-center">
+                <p class="text-blue-300 text-sm">© 2023 Оздоровительный центр "КДМ". Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/applications.js"></script>
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-button').addEventListener('click', function() {
+            document.getElementById('mobile-menu').classList.toggle('active');
+        });
+
+        // User menu toggle
+        document.getElementById('userMenuButton').addEventListener('click', function() {
+            document.getElementById('userMenu').classList.toggle('hidden');
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const userMenu = document.getElementById('userMenu');
+            const userMenuButton = document.getElementById('userMenuButton');
+            
+            if (!userMenuButton.contains(event.target) && !userMenu.contains(event.target)) {
+                userMenu.classList.add('hidden');
+            }
+            
+            // Handle deep link to edit after all handlers are wired
+            if (typeof openEditIfNeeded === 'function') {
+                openEditIfNeeded();
+            }
+        });
+
+        // Open edit modal if hash is #edit (then clear hash to avoid re-open)
+        function openEditIfNeeded() {
+            if (location.hash === '#edit') {
+                const btn = document.getElementById('editProfileBtn');
+                if (btn) btn.click();
+                try { history.replaceState(null, '', location.pathname + location.search); } catch {}
+            }
+        }
+        window.addEventListener('hashchange', openEditIfNeeded);
+        openEditIfNeeded();
+
+        const openEditFromMenu = document.getElementById('openEditFromMenu');
+        if (openEditFromMenu) {
+            openEditFromMenu.addEventListener('click', function(e) {
+                e.preventDefault();
+                const btn = document.getElementById('editProfileBtn');
+                if (btn) btn.click();
+                const userMenu = document.getElementById('userMenu');
+                if (userMenu) userMenu.classList.add('hidden');
+            });
+        }
+
+        // Tab navigation
+        document.querySelectorAll('.profile-nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                switchToTab(this.getAttribute('data-tab'));
+            });
+        });
+
+        // Function to switch tabs
+        function switchToTab(tabId) {
+            // Remove active class from all nav items
+            document.querySelectorAll('.profile-nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            
+            // Add active class to clicked item
+            document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+            
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+            });
+            
+            // Show selected tab content
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+            
+            // Автоматически обновляем данные при переключении на вкладки
+            if (window.applicationsManager) {
+                if (tabId === 'applications') {
+                    console.log('Switching to applications tab, refreshing data...');
+                    window.applicationsManager.forceRefreshUserData();
+                }
+                if (tabId === 'upcoming') {
+                    console.log('Switching to upcoming tab, rendering user upcoming appointments...');
+                    window.applicationsManager.renderUserUpcomingAppointments();
+                }
+            }
+        }
+        
+        // Header buttons wiring
+        const sendApplicationBtn = document.getElementById('sendApplicationBtn');
+        if (sendApplicationBtn) {
+            sendApplicationBtn.addEventListener('click', function() {
+                if (typeof openApplicationModal === 'function') {
+                    openApplicationModal();
+                }
+            });
+        }
+
+        const adminApplicationsBtn = document.getElementById('adminApplicationsBtn');
+        if (adminApplicationsBtn) {
+            adminApplicationsBtn.addEventListener('click', function() {
+                switchToTab('admin-applications');
+                if (window.applicationsManager) {
+                    window.applicationsManager.renderAdminApplications();
+                }
+            });
+        }
+
+        const adminUsersBtn = document.getElementById('adminUsersBtn');
+        if (adminUsersBtn) {
+            adminUsersBtn.addEventListener('click', function() {
+                switchToTab('admin-users');
+                if (typeof renderAdminUsers === 'function') {
+                    renderAdminUsers();
+                }
+            });
+        }
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async function() {
+            const ok = await (typeof showConfirm === 'function' ? showConfirm('Вы уверены, что хотите выйти?') : Promise.resolve(confirm('Вы уверены, что хотите выйти?')));
+            if (!ok) return;
+            try { if (window.authManager && typeof window.authManager.handleLogout === 'function') { await window.authManager.handleLogout(); return; } } catch {}
+            try {
+                const fb = (window.firebaseModules || {});
+                const auth = (window.firebaseServices || {}).auth;
+                if (fb.signOut && auth) { await fb.signOut(auth); }
+            } catch {}
+            localStorage.removeItem('user');
+            window.location.href = 'login.html';
+        });
+
+        // Load user data
+        function loadUserData() {
+            const user = JSON.parse(localStorage.getItem('user'));
+            
+            // Проверяем, есть ли пользователь в localStorage
+            if (!user) {
+                // Если пользователь не найден, перенаправляем на страницу входа
+                window.location.href = 'login.html';
+                return;
+            }
+
+            // Загружаем реальные данные пользователя
+            document.getElementById('userName').textContent = user.firstName || '';
+            document.getElementById('fullUserName').textContent = `${user.lastName || ''} ${user.firstName || ''} ${user.middleName || ''}`.trim();
+            document.getElementById('userEmail').textContent = user.email || '';
+            document.getElementById('registrationDate').textContent = user.registrationDate || '';
+            const phoneEl = document.getElementById('userPhone');
+            if (phoneEl) phoneEl.textContent = user.phone || '—';
+
+            // Аватар
+            const avatarImage = document.getElementById('avatarImage');
+            const avatarIcon = document.getElementById('avatarIcon');
+            const avatarData = user.avatar || localStorage.getItem('userAvatar');
+            if (avatarData && avatarImage) {
+                avatarImage.src = avatarData;
+                avatarImage.classList.remove('hidden');
+                if (avatarIcon) avatarIcon.classList.add('hidden');
+            } else {
+                if (avatarImage) avatarImage.classList.add('hidden');
+                if (avatarIcon) avatarIcon.classList.remove('hidden');
+            }
+            
+            // Show admin features if user is admin
+            if (user.role === 'admin') {
+                document.getElementById('adminApplicationsBtn').style.display = 'block';
+                document.getElementById('adminNewsBtn').style.display = 'block';
+                document.getElementById('adminApplicationsTab').style.display = 'block';
+                const adminUsersBtnEl = document.getElementById('adminUsersBtn');
+                const adminUsersTabEl = document.getElementById('adminUsersTab');
+                if (adminUsersBtnEl) adminUsersBtnEl.style.display = 'block';
+                if (adminUsersTabEl) adminUsersTabEl.style.display = 'block';
+                document.getElementById('userRole').textContent = 'Админ';
+                document.getElementById('userRole').classList.add('bg-red-100', 'text-red-800');
+            } else {
+                document.getElementById('userRole').textContent = 'Пользователь';
+            }
+        }
+
+        // Initialize page
+        loadUserData();
+        
+        // Автоматически обновляем данные заявок при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ждем немного, чтобы ApplicationsManager успел инициализироваться
+            setTimeout(() => {
+                if (window.applicationsManager) {
+                    console.log('Page loaded, refreshing applications data...');
+                    window.applicationsManager.forceRefreshUserData();
+                }
+            }, 1000);
+
+            // Toggle sections visibility
+            const userContent = document.getElementById('userApplicationsContent');
+            const adminContent = document.getElementById('adminApplicationsContent');
+            const userToggleBtn = document.getElementById('toggleUserApplicationsSection');
+            const adminToggleBtn = document.getElementById('toggleAdminApplicationsSection');
+
+            // Load saved state
+            const userHidden = localStorage.getItem('userApplicationsHidden') === '1';
+            const adminHidden = localStorage.getItem('adminApplicationsHidden') === '1';
+
+            function applyVisibility(contentEl, toggleBtn, hidden) {
+                if (!contentEl || !toggleBtn) return;
+                if (hidden) {
+                    contentEl.style.display = 'none';
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-down mr-2"></i>Развернуть';
+                } else {
+                    contentEl.style.display = '';
+                    toggleBtn.innerHTML = '<i class="fas fa-chevron-up mr-2"></i>Свернуть';
+                }
+            }
+
+            applyVisibility(userContent, userToggleBtn, userHidden);
+            applyVisibility(adminContent, adminToggleBtn, adminHidden);
+
+            if (userToggleBtn && userContent) {
+                userToggleBtn.addEventListener('click', function() {
+                    const nowHidden = userContent.style.display !== 'none' ? true : false;
+                    localStorage.setItem('userApplicationsHidden', nowHidden ? '1' : '0');
+                    applyVisibility(userContent, userToggleBtn, nowHidden);
+                });
+            }
+
+            if (adminToggleBtn && adminContent) {
+                adminToggleBtn.addEventListener('click', function() {
+                    const nowHidden = adminContent.style.display !== 'none' ? true : false;
+                    localStorage.setItem('adminApplicationsHidden', nowHidden ? '1' : '0');
+                    applyVisibility(adminContent, adminToggleBtn, nowHidden);
+                });
+            }
+
+            // Admin users tab filters wiring
+            const usersSearch = document.getElementById('usersSearch');
+            const usersRoleFilter = document.getElementById('usersRoleFilter');
+            if (usersSearch) {
+                usersSearch.addEventListener('input', () => {
+                    if (typeof renderAdminUsers === 'function') renderAdminUsers();
+                });
+            }
+            if (usersRoleFilter) {
+                usersRoleFilter.addEventListener('change', () => {
+                    if (typeof renderAdminUsers === 'function') renderAdminUsers();
+                });
+            }
+
+            // Edit profile modal wiring
+            const editProfileBtn = document.getElementById('editProfileBtn');
+            const editProfileModal = document.getElementById('editProfileModal');
+            const avatarInput = document.getElementById('avatarInput');
+            const saveAvatarBtn = document.getElementById('saveAvatarBtn');
+            const removeAvatarBtn = document.getElementById('removeAvatarBtn');
+            const editAvatarPreview = document.getElementById('editAvatarPreview');
+            const editLastName = document.getElementById('editLastName');
+            const editFirstName = document.getElementById('editFirstName');
+            const editMiddleName = document.getElementById('editMiddleName');
+            const saveFioBtn = document.getElementById('saveFioBtn');
+
+            if (editProfileBtn && editProfileModal) {
+                editProfileBtn.addEventListener('click', () => {
+                    editProfileModal.style.display = 'flex';
+                    setTimeout(() => editProfileModal.classList.add('show'), 10);
+                    // preload current avatar
+                    const user = JSON.parse(localStorage.getItem('user')) || {};
+                    const current = user.avatar || localStorage.getItem('userAvatar');
+                    if (current && editAvatarPreview) {
+                        editAvatarPreview.src = current;
+                        editAvatarPreview.classList.remove('hidden');
+                    } else if (editAvatarPreview) {
+                        editAvatarPreview.classList.add('hidden');
+                    }
+                    // preload FIO
+                    if (editLastName) editLastName.value = user.lastName || '';
+                    if (editFirstName) editFirstName.value = user.firstName || '';
+                    if (editMiddleName) editMiddleName.value = user.middleName || '';
+                });
+            }
+
+            if (avatarInput) {
+                avatarInput.addEventListener('change', function(e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+                    if (!file.type.startsWith('image/')) {
+                        alert('Пожалуйста, выберите файл изображения');
+                        return;
+                    }
+                    if (file.size > 2 * 1024 * 1024) {
+                        alert('Размер файла не должен превышать 2 МБ');
+                        e.target.value = '';
+                        return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        if (editAvatarPreview) {
+                            editAvatarPreview.src = evt.target.result;
+                            editAvatarPreview.classList.remove('hidden');
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            if (saveAvatarBtn) {
+                saveAvatarBtn.addEventListener('click', function() {
+                    const src = editAvatarPreview && !editAvatarPreview.classList.contains('hidden') ? editAvatarPreview.src : null;
+                    if (!src) {
+                        alert('Сначала выберите изображение');
+                        return;
+                    }
+                    const user = JSON.parse(localStorage.getItem('user')) || {};
+                    user.avatar = src;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    localStorage.setItem('userAvatar', src);
+                    const avatarImage = document.getElementById('avatarImage');
+                    const avatarIcon = document.getElementById('avatarIcon');
+                    if (avatarImage) {
+                        avatarImage.src = src;
+                        avatarImage.classList.remove('hidden');
+                    }
+                    if (avatarIcon) avatarIcon.classList.add('hidden');
+                    // close
+                    closeEditProfileModal();
+                });
+            }
+
+            if (removeAvatarBtn) {
+                removeAvatarBtn.addEventListener('click', async function() {
+                    const ok = await (typeof showConfirm === 'function' ? showConfirm('Удалить аватар?') : Promise.resolve(confirm('Удалить аватар?')));
+                    if (!ok) return;
+                    const user = JSON.parse(localStorage.getItem('user')) || {};
+                    delete user.avatar;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    localStorage.removeItem('userAvatar');
+                    const avatarImage = document.getElementById('avatarImage');
+                    const avatarIcon = document.getElementById('avatarIcon');
+                    if (avatarImage) avatarImage.classList.add('hidden');
+                    if (avatarIcon) avatarIcon.classList.remove('hidden');
+                    if (editAvatarPreview) editAvatarPreview.classList.add('hidden');
+                    closeEditProfileModal();
+                });
+            }
+
+            // Save FIO
+            if (saveFioBtn) {
+                saveFioBtn.addEventListener('click', function() {
+                    const user = JSON.parse(localStorage.getItem('user')) || {};
+                    const lastName = (editLastName && editLastName.value || '').trim();
+                    const firstName = (editFirstName && editFirstName.value || '').trim();
+                    const middleName = (editMiddleName && editMiddleName.value || '').trim();
+
+                    user.lastName = lastName;
+                    user.firstName = firstName;
+                    user.middleName = middleName;
+                    localStorage.setItem('user', JSON.stringify(user));
+
+                    // Обновляем список пользователей
+                    try {
+                        const usersRaw = localStorage.getItem('users');
+                        const users = usersRaw ? JSON.parse(usersRaw) : [];
+                        const idx = users.findIndex(u => u && u.email === user.email);
+                        if (idx >= 0) {
+                            users[idx].lastName = lastName;
+                            users[idx].firstName = firstName;
+                            users[idx].middleName = middleName;
+                            localStorage.setItem('users', JSON.stringify(users));
+                        }
+                    } catch {}
+
+                    // Обновляем имя в существующих заявках пользователя
+                    try {
+                        const appsRaw = localStorage.getItem('applications');
+                        const apps = appsRaw ? JSON.parse(appsRaw) : [];
+                        const newFullName = [lastName, firstName, middleName].filter(Boolean).join(' ');
+                        let changed = false;
+                        apps.forEach(a => {
+                            if (a && a.userEmail === user.email) {
+                                a.userName = newFullName;
+                                changed = true;
+                            }
+                        });
+                        if (changed) localStorage.setItem('applications', JSON.stringify(apps));
+                    } catch {}
+
+                    // Обновляем заголовок профиля
+                    const full = [lastName, firstName, middleName].filter(Boolean).join(' ');
+                    const fullUserNameEl = document.getElementById('fullUserName');
+                    if (fullUserNameEl) fullUserNameEl.textContent = full || '—';
+                    const userNameEl = document.getElementById('userName');
+                    if (userNameEl) userNameEl.textContent = firstName || 'Пользователь';
+
+                    alert('Изменения сохранены');
+                    closeEditProfileModal();
+                });
+            }
+        });
+
+        function closeEditProfileModal() {
+            const modal = document.getElementById('editProfileModal');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => modal.style.display = 'none', 200);
+            }
+        }
+
+        // Floating chat (bottom-left)
+        (function initFloatingChat() {
+            // Inject floating chat container if not present
+            if (!document.getElementById('floatingChat')) {
+                const chatDiv = document.createElement('div');
+                chatDiv.id = 'floatingChat';
+                chatDiv.className = 'fixed bottom-4 right-4 w-80 bg-white rounded-lg shadow-xl border border-gray-200 hidden z-50';
+                chatDiv.innerHTML = `
+                    <div class="flex items-center justify-between px-3 py-2 bg-blue-600 text-white rounded-t-lg">
+                        <div class="text-sm font-semibold" id="floatingChatTitle">Чат</div>
+                        <button id="floatingChatClose" class="text-white"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div id="floatingChatMessages" class="p-3 max-h-64 overflow-y-auto text-sm bg-gray-50"></div>
+                    <div class="flex items-center gap-2 p-2 border-t">
+                        <input id="floatingChatInput" type="text" class="flex-1 border rounded px-2 py-1 text-sm" placeholder="Сообщение..." />
+                        <button id="floatingChatSend" class="bg-blue-600 text-white px-3 py-1 rounded text-sm">Отпр.</button>
+                    </div>`;
+                document.body.appendChild(chatDiv);
+            }
+
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            const currentRole = user && user.role === 'admin' ? 'admin' : 'user';
+
+            function getChats() {
+                try { return JSON.parse(localStorage.getItem('appChats') || '{}'); } catch { return {}; }
+            }
+
+            function getLastSeenKey(appId) {
+                const email = (user && user.email) || 'guest';
+                return `chatSeen:${email}:${appId}`;
+            }
+
+            function setLastSeen(appId, ts) {
+                try { localStorage.setItem(getLastSeenKey(appId), String(ts || Date.now())); } catch {}
+            }
+
+            function getLastSeen(appId) {
+                const v = localStorage.getItem(getLastSeenKey(appId));
+                return v ? parseInt(v, 10) : 0;
+            }
+
+            function renderMessages(appId) {
+                const msgsWrap = document.getElementById('floatingChatMessages');
+                if (!msgsWrap) return;
+                const chats = getChats();
+                const list = chats[appId] || [];
+                msgsWrap.innerHTML = list.map(msg => {
+                    const mine = (msg.sender === currentRole);
+                    const time = new Date(msg.timestamp).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+                    return `
+                        <div class="mb-2 ${mine ? 'text-right' : 'text-left'}">
+                            <div class="inline-block ${mine ? 'bg-blue-600 text-white' : 'bg-white'} border rounded px-3 py-2 max-w-[85%]">
+                                <div class="text-[10px] ${mine ? 'text-gray-200' : 'text-gray-500'}">${mine ? 'Вы' : (currentRole === 'admin' ? 'Пользователь' : 'Админ')} • ${time}</div>
+                                <div class="mt-1 whitespace-pre-wrap">${(msg.text || '').replace(/</g,'&lt;')}</div>
+                            </div>
+                        </div>`;
+                }).join('');
+                msgsWrap.scrollTop = msgsWrap.scrollHeight;
+            }
+
+            function openFloatingChat(appId) {
+                const wrap = document.getElementById('floatingChat');
+                const title = document.getElementById('floatingChatTitle');
+                if (!wrap || !title) return;
+                wrap.dataset.appId = appId;
+                title.textContent = `Чат · ${appId}`;
+                renderMessages(appId);
+                wrap.classList.remove('hidden');
+                // mark as seen
+                const chats = getChats();
+                const last = (chats[appId] || []).slice(-1)[0];
+                if (last) setLastSeen(appId, last.timestamp);
+            }
+            window.openFloatingChatForApp = openFloatingChat;
+
+            function findUnreadThread() {
+                const chats = getChats();
+                let best = null;
+                Object.entries(chats).forEach(([appId, list]) => {
+                    if (!Array.isArray(list) || list.length === 0) return;
+                    const last = list[list.length - 1];
+                    if (!last || !last.timestamp) return;
+                    if (last.sender === currentRole) return; // message from self, ignore
+                    const seen = getLastSeen(appId);
+                    if (last.timestamp > seen) {
+                        if (!best || last.timestamp > best.last.timestamp) {
+                            best = { appId, last };
+                        }
+                    }
+                });
+                return best;
+            }
+
+            // Listen for new messages via storage
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'appChats') {
+                    const unread = findUnreadThread();
+                    if (unread) {
+                        openFloatingChat(unread.appId);
+                    }
+                }
+            });
+
+            // Fallback: periodic check in case storage event is missed
+            setInterval(() => {
+                const unread = findUnreadThread();
+                if (unread) {
+                    openFloatingChat(unread.appId);
+                }
+            }, 2000);
+
+            // Allow manual close
+            const closeBtn = document.getElementById('floatingChatClose');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', function() {
+                    const wrap = document.getElementById('floatingChat');
+                    if (!wrap) return;
+                    const appId = wrap.dataset.appId;
+                    // mark seen up to now
+                    const chats = getChats();
+                    const last = (chats[appId] || []).slice(-1)[0];
+                    if (last) setLastSeen(appId, last.timestamp);
+                    wrap.classList.add('hidden');
+                });
+            }
+
+            // Send handler
+            const sendBtn = document.getElementById('floatingChatSend');
+            const inputEl = document.getElementById('floatingChatInput');
+            function doSend() {
+                const wrap = document.getElementById('floatingChat');
+                if (!wrap) return;
+                const appId = wrap.dataset.appId;
+                if (!appId) return;
+                const text = (inputEl && inputEl.value || '').trim();
+                if (!text) return;
+                const chats = getChats();
+                const list = chats[appId] || [];
+                list.push({ sender: currentRole, text, timestamp: Date.now() });
+                chats[appId] = list;
+                localStorage.setItem('appChats', JSON.stringify(chats));
+                inputEl.value = '';
+                renderMessages(appId);
+                setLastSeen(appId, Date.now());
+            }
+            if (sendBtn && inputEl) {
+                sendBtn.addEventListener('click', doSend);
+                inputEl.addEventListener('keydown', function(ev) { if (ev.key === 'Enter') doSend(); });
+            }
+
+            // On load, if there are unread, open the latest
+            const initial = findUnreadThread();
+            if (initial) {
+                openFloatingChat(initial.appId);
+            }
+        })();
+    </script>
+</body>
+</html>
